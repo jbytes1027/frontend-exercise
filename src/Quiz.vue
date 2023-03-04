@@ -39,7 +39,7 @@ export default {
       this.answers.push(answer)
 
       // if not last question
-      if (this.currQuestionIndex + 1 != this.questions.length)
+      if (this.currQuestionIndex + 1 !== this.questions.length)
         this.currQuestionIndex++
       else this.state = this.STATES.Summary
     },
