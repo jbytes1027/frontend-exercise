@@ -1,9 +1,11 @@
 <script>
-import Question from "./Question.vue"
+import QuestionPrompt from "./QuestionPrompt.vue"
+import Summary from "./Summary.vue"
 
 export default {
   components: {
-    Question,
+    QuestionPrompt,
+    Summary,
   },
   props: {
     questions: {
@@ -11,27 +13,38 @@ export default {
       required: true,
     },
   },
+  setup() {
+    return {
+      STATES: {
+        Start: 0,
+        Ask: 1,
+        Summary: 2,
+      },
+    }
+  },
   data() {
     return {
       currQuestionIndex: 0,
-      currChoice: String,
       answers: [],
-      doneAsking: false,
+      state: this.STATES.Start,
     }
   },
   methods: {
-    onNext() {
-      let currQuestion = this.questions[this.currQuestionIndex]
-      let answer = {
-        question: currQuestion.text,
-        response: this.currChoice,
-      }
+    onStart() {
+      this.answers = []
+      this.currQuestionIndex = 0
+      this.state = this.STATES.Ask
+    },
+    onQuestionAnswered(answer) {
       this.answers.push(answer)
 
       // if not last question
       if (this.currQuestionIndex + 1 != this.questions.length)
         this.currQuestionIndex++
-      else this.doneAsking = true
+      else this.state = this.STATES.Summary
+    },
+    onRestart() {
+      this.state = this.STATES.Start
     },
   },
 }
@@ -39,11 +52,20 @@ export default {
 
 <template>
   <div id="quiz">
-    <Question
+    <div id="start" v-if="state === STATES.Start">
+      <h1>Quiz</h1>
+      <p>Please answer a couple questions</p>
+      <button @click="onStart">Begin</button>
+    </div>
+    <QuestionPrompt
+      v-if="state === STATES.Ask"
       :question="questions[currQuestionIndex]"
-      @on-selection="(choice) => (currChoice = choice)"
+      @on-answer="onQuestionAnswered"
     />
-    <br />
-    <button type="button" @click="onNext">Next</button>
+    <Summary
+      v-if="state === STATES.Summary"
+      :answers="answers"
+      @on-restart="onRestart"
+    />
   </div>
 </template>
